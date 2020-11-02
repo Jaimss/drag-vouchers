@@ -1,6 +1,7 @@
 package dev.jaims.dragvouchers.manager
 
 import dev.jaims.dragvouchers.DragVouchers
+import dev.jaims.mcutils.bukkit.colorize
 import dev.jaims.mcutils.bukkit.item.createItem
 import dev.jaims.mcutils.bukkit.item.meta
 import dev.jaims.mcutils.bukkit.item.name
@@ -27,7 +28,7 @@ fun buildVoucherItem(plugin: DragVouchers, name: String): ItemStack? {
     return createItem(material) {
         meta {
             this.name = itemName
-            lore = itemLore
+            lore = itemLore.map { it.colorize() }
             this.persistentDataContainer.set(voucherNamespaceKey, PersistentDataType.STRING, name)
         }
     }

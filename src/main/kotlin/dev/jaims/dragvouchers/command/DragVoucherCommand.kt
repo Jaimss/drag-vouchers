@@ -32,10 +32,26 @@ class DragVoucherCommand(private val plugin: DragVouchers) : CommandBase() {
     }
 
     /**
+     * Reload the config file
+     */
+    @SubCommand("reload")
+    fun reload(sender: CommandSender) {
+        if (!sender.hasPermission("dragvouchers.reload")) {
+            sender.send(plugin.config.getString("lang.no-permission") ?: "&cYou do not have permission!")
+            return
+        }
+        plugin.reloadConfig()
+    }
+
+    /**
      * Give a voucher with [name] to a [targetName] name
      */
     @SubCommand("give")
     fun give(sender: CommandSender, name: String, targetName: String) {
+        if (!sender.hasPermission("dragvouchers.give")) {
+            sender.send(plugin.config.getString("lang.no-permission") ?: "&cYou do not have permission!")
+            return
+        }
         // get a target player from their name and send an error if they aren't found
         val target = Bukkit.getServer().getPlayer(targetName) ?: run {
             val noPlayerFoundMessage =

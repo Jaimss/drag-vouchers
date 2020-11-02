@@ -8,10 +8,11 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.Damageable
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.inventory.meta.Damageable
 import org.bukkit.persistence.PersistentDataType
 import javax.print.attribute.standard.Severity
 
@@ -22,13 +23,15 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
      *
      * the bulk of the plugin is contained in here
      */
+    @EventHandler
     fun InventoryClickEvent.onClick() {
-
         val player = whoClicked as? Player ?: return
 
         // they have to have a carried item and drop it on an item in the inventory
         val carriedItem = cursor ?: return
         val clickedItem = currentItem ?: return
+
+        val clickedItemMeta = clickedItem.itemMeta ?: return
 
         // the carried item needs to have the persistent data key we gave
         val carriedItemMeta = carriedItem.itemMeta ?: return
@@ -36,9 +39,6 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         if (!carriedItemDataContainer.has(voucherNamespaceKey, PersistentDataType.STRING)) return
         // now we get the voucher name from that persistent data container
         val voucherName = carriedItemDataContainer.get(voucherNamespaceKey, PersistentDataType.STRING)
-
-        val clickedItemMeta = clickedItem.itemMeta ?: return
-        val damageableClickedItemMeta = (clickedItemMeta as Damageable)
 
         // get the configuration section of the voucher name
         val voucherConfigSection = plugin.config.getConfigurationSection("vouchers.${voucherName}") ?: run {
@@ -66,7 +66,7 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         val allowedItems = requirementsSection.getStringList("item-type")
         // if the type is in the list, we are good to go
         if (allowedItems.isNotEmpty()) {
-            if (!allowedItems.contains(clickedItem.type.key.key)) return
+            if (!allowedItems.map { it.toLowerCase() }.contains(clickedItem.type.key.key.toLowerCase())) return
         }
 
         // enchantment requirements list
@@ -76,13 +76,13 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
             }
             Enchantment.getByKey(
                 NamespacedKey.minecraft(
-                    it.split(":").firstOrNull() ?: ""
+                    it.split(":").firstOrNull()?.toLowerCase() ?: "null"
                 )
             ) to it.split(":").getOrNull(1)?.toIntOrNull()
         }
         // loop through all the requirements to see if it has one of the required enchantments
         // if we have one of the required enchantments, we are good to go
-        var hasOneEnchantment = false
+        var hasOneEnchantment = requiredEnchantments.isEmpty()
         val enchantments = clickedItem.enchantments
         for ((ench, level) in requiredEnchantments) {
             if (ench == null || level == null) continue
@@ -93,6 +93,8 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         // at this point, we have met all requirements
         //
         // we now move on to handling the actual item
+        player.setItemOnCursor(null)
+
         val dataConfigSection = voucherConfigSection.getConfigurationSection("data") ?: run {
             plugin.log(
                 "The data section couldn't be found for voucher $voucherName. This means nothing is happening when it is used!",
@@ -116,11 +118,15 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
             }
             Enchantment.getByKey(
                 NamespacedKey.minecraft(
-                    it.split(":").firstOrNull() ?: ""
+                    it.split(":").firstOrNull()?.toLowerCase() ?: ""
                 )
             ) to it.split(":").getOrNull(1)?.toIntOrNull()
         }
-        clickedItem.addEnchantments(enchantmentsToAdd.filter { it.key != null && it.value != null })
+        enchantmentsToAdd.forEach { (ench, level) ->
+            if (ench != null && level != null) {
+                clickedItemMeta.addEnchant(ench, level, true)
+            }
+        }
 
         // change item durability
         val durabilityModification = dataConfigSection.getString("durability") ?: "none"
@@ -131,10 +137,12 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
                 return
             }
 
+            val damageableClickedItemMeta = (clickedItemMeta as Damageable)
+
             when (operatorString) {
-                "+" -> damageableClickedItemMeta.health = damageableClickedItemMeta.health + amt
-                "-" -> damageableClickedItemMeta.health = damageableClickedItemMeta.health - amt
-                "=" -> damageableClickedItemMeta.health = amt.toDouble()
+                "+" -> damageableClickedItemMeta.damage = damageableClickedItemMeta.damage + amt
+                "-" -> damageableClickedItemMeta.damage = damageableClickedItemMeta.damage - amt
+                "=" -> damageableClickedItemMeta.damage = amt
             }
         }
 
@@ -145,8 +153,6 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         playerCommands.forEach { player.performCommand(it) }
         consoleCommands.forEach { Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), it) }
 
-        // everything worked! remove the voucher from their inventory
-        player.inventory.remove(carriedItem)
+        clickedItem.itemMeta = clickedItemMeta
     }
-
 }

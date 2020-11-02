@@ -1,5 +1,5 @@
 lang:
-  no-player-found: '&cNo player found with name {target}'
+  no-player-found: '&cNo player found with name {target}.'
   no-permission: '&cYou do not have permission for this!'
   command:
     dv:
@@ -14,13 +14,13 @@ lang:
       voucher-received: '&aYou recieved a {name} voucher!'
 
 vouchers:
-  name:
+  one:
     item:
       material: 'DIAMOND'
-      name: 'Some name'
+      name: '&aOne'
       lore:
-        - 'some lore'
-        - 'more lore'
+        - 'One Lore'
+        - '&3One Lore'
     requirements:
       # blank or none for no permission
       permission: ''
@@ -31,14 +31,38 @@ vouchers:
       enchantments:
         - 'SHARPNESS:3'
     data:
-      item-type: 'DIAMOND_SWORD'
+      # change the item to this when it is activated
+      item-type: 'IRON_SWORD'
+      # enchantments to apply
       enchant:
         - 'SHARPNESS:3'
-        - '-EFFICIENCY:1'
+        - 'EFFICIENCY:1'
       # 0 durability is full health item
-      durability: '+/-/= amt'
+      durability: '=100'
+      # commands to run
       commands:
         player:
-          - 'run this as player'
+          - 'me hello'
         console:
-          - 'run this as console'
+          - 'say hello'
+  two:
+    item:
+      material: 'EMERALD'
+      name: '<#00ff9d>Two (With HEX)'
+      lore:
+        - '<#ffaa00>The lore supports hex too!'
+    requirements:
+      # blank or none for no permission
+      permission: 'some.permission'
+      # a list of materials
+      item-type: []
+      enchantments: []
+    data:
+      # blank or none for no change
+      item-type: 'none'
+      # enchantments to apply
+      enchant: []
+      # 0 durability is full health item
+      durability: '+100'
+      # commands to run
+      commands: []
