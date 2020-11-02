@@ -1,0 +1,44 @@
+lang:
+  no-player-found: '&cNo player found with name {target}'
+  no-permission: '&cYou do not have permission for this!'
+  command:
+    dv:
+      usage:
+        - '&3DragVouchers - A Voucher Plugin that supports Inventory Dragging'
+        - '&3By: Jaimss'
+        - ' '
+        - '&3/dv [help] &7- shows this page'
+        - '&3/dv give <name> <target> &7-give a voucher with a given name to a player'
+      no-voucher-found: '&cNo voucher found with name {name}.'
+      voucher-given: '&aSuccessfully gave {target} a {name} voucher!'
+      voucher-received: '&aYou recieved a {name} voucher!'
+
+vouchers:
+  name:
+    item:
+      material: 'DIAMOND'
+      name: 'Some name'
+      lore:
+        - 'some lore'
+        - 'more lore'
+    requirements:
+      # blank or none for no permission
+      permission: ''
+      # a list of materials
+      item-type:
+        - 'DIAMOND_SWORD'
+        - 'IRON_SWORD'
+      enchantments:
+        - 'SHARPNESS:3'
+    data:
+      item-type: 'DIAMOND_SWORD'
+      enchant:
+        - 'SHARPNESS:3'
+        - '-EFFICIENCY:1'
+      # 0 durability is full health item
+      durability: '+/-/= amt'
+      commands:
+        player:
+          - 'run this as player'
+        console:
+          - 'run this as console'

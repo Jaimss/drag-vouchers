@@ -1,0 +1,23 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'me.bristermitten.pdm' version '0.0.29'
+}
+
+group 'dev.jaims'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://repo.jaims.dev/repository/maven-releases/' }
+}
+
+dependencies {
+    pdm "org.jetbrains.kotlin:kotlin-stdlib:1.4.10"
+    pdm 'dev.jaims.mcutils:bukkit:2.1.3'
+    pdm 'me.mattstudios.utils:matt-framework:1.4'
+
+    compileOnly 'org.spigotmc:spigot-api:1.16.2-R0.1-SNAPSHOT'
+}
+
+jar.dependsOn project.tasks.getByName('pdm')
