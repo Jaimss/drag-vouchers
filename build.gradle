@@ -1,11 +1,10 @@
 plugins {
-    id "com.github.unafraid.gradle.git-repo-plugin" version "2.0.4.1"
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'dev.jaims'
-version '1.0.1'
+version '1.0.2'
 
 shadowJar {
     archiveClassifier = ''
@@ -15,9 +14,10 @@ shadowJar {
 
 repositories {
     mavenCentral()
+    jcenter()
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://repo.jaims.dev/repository/maven-releases/' }
-    github("TeamVK", "maven-repository", "origin", "master", "release")
+    maven { url 'https://raw.githubusercontent.com/TeamVK/maven-repository/master/release/' }
 }
 
 dependencies {

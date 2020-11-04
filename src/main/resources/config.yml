@@ -30,6 +30,8 @@ vouchers:
         - 'IRON_SWORD'
       enchantments:
         - 'SHARPNESS:3'
+      token-enchantments:
+        - 'SomeEnchant:0'
     data:
       # change the item to this when it is activated
       item-type: 'IRON_SWORD'
@@ -37,6 +39,10 @@ vouchers:
       enchant:
         - 'SHARPNESS:3'
         - 'EFFICIENCY:1'
+      token-enchant:
+        - 'SomeTokenEnchantment:level'
+        - 'Other:level'
+        - 'Final:0'  # 0 removes the enchant
       # 0 durability is full health item
       durability: '=100'
       # commands to run

@@ -41,6 +41,7 @@ class DragVoucherCommand(private val plugin: DragVouchers) : CommandBase() {
             return
         }
         plugin.reloadConfig()
+        sender.send("&aSuccessfully reloaded DragVouchers!")
     }
 
     /**
@@ -74,8 +75,9 @@ class DragVoucherCommand(private val plugin: DragVouchers) : CommandBase() {
             plugin.config.getString("lang.command.dv.voucher-given") ?: "&aSuccessfully gave {target} a {name} voucher!"
         val voucherReceivedMessage =
             plugin.config.getString("lang.command.dv.voucher-received") ?: "&aYou received a {name} voucher!"
-        sender.send(giveSuccessMessage.replace("{target}", targetName).replace("{name}", name))
-        target.send(voucherReceivedMessage.replace("{name}", name))
+        val voucherName = plugin.config.getString("vouchers.${name}.item.name")
+        sender.send(giveSuccessMessage.replace("{target}", targetName).replace("{name}", voucherName ?: "null"))
+        target.send(voucherReceivedMessage.replace("{name}", voucherName ?: "null"))
     }
 
 }

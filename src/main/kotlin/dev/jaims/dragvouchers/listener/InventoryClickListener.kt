@@ -1,5 +1,6 @@
 package dev.jaims.dragvouchers.listener
 
+import com.vk2gpz.tokenenchant.api.TokenEnchantAPI
 import dev.jaims.dragvouchers.DragVouchers
 import dev.jaims.dragvouchers.manager.voucherNamespaceKey
 import dev.jaims.mcutils.bukkit.log
@@ -29,7 +30,7 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
 
         // they have to have a carried item and drop it on an item in the inventory
         val carriedItem = cursor ?: return
-        val clickedItem = currentItem ?: return
+        var clickedItem = currentItem ?: return
 
         val clickedItemMeta = clickedItem.itemMeta ?: return
 
@@ -89,6 +90,22 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
             if (enchantments[ench] == level) hasOneEnchantment = true
         }
         if (!hasOneEnchantment) return
+
+        // token enchantment requirement
+        val requiredTokenEnchants = requirementsSection.getStringList("token-enchantments").associate {
+            if (!it.contains(":")) {
+                null to null
+            }
+            it.split(":").firstOrNull()?.toLowerCase() to it.split(":").getOrNull(1)?.toIntOrNull()
+        }
+        var hasOneTokenEnchant = requiredTokenEnchants.isEmpty()
+        val currentTokenEnchantments = TokenEnchantAPI.getInstance().getEnchantments(clickedItem)
+        for ((ench, level) in requiredTokenEnchants) {
+            if (ench == null || level == null) continue
+            val tokenFromName = TokenEnchantAPI.getInstance().getEnchantment(ench)
+            if (currentTokenEnchantments[tokenFromName] == level) hasOneTokenEnchant = true
+        }
+        if (!hasOneTokenEnchant) return
 
         // at this point, we have met all requirements
         //
@@ -156,5 +173,23 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         consoleCommands.forEach { Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), it) }
 
         clickedItem.itemMeta = clickedItemMeta
+
+        // manage token enchants
+        val tokenEnchantmetsToAdd = dataConfigSection.getStringList("token-enchant").associate {
+            if (!it.contains(":")) {
+                null to null
+            }
+            it.split(":").firstOrNull()?.toLowerCase() to it.split(":").getOrNull(1)?.toIntOrNull()
+        }
+        tokenEnchantmetsToAdd.forEach { (ench, level) ->
+            if (ench != null && level != null) {
+                clickedItem = if (level != 0) {
+                    TokenEnchantAPI.getInstance().enchant(null, clickedItem, ench, level, false, 0.0, true)
+                } else {
+                    val levelOneItem = TokenEnchantAPI.getInstance().enchant(null, clickedItem, ench, 1, false, 0.0, true)
+                    TokenEnchantAPI.getInstance().disenchant(null, levelOneItem, ench, false, true)
+                }
+            }
+        }
     }
 }
