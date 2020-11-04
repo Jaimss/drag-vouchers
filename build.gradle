@@ -1,10 +1,11 @@
 plugins {
+    id "com.github.unafraid.gradle.git-repo-plugin" version "2.0.4.1"
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'dev.jaims'
-version '1.0.0'
+version '1.0.1'
 
 shadowJar {
     archiveClassifier = ''
@@ -16,6 +17,7 @@ repositories {
     mavenCentral()
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://repo.jaims.dev/repository/maven-releases/' }
+    github("TeamVK", "maven-repository", "origin", "master", "release")
 }
 
 dependencies {
@@ -24,6 +26,7 @@ dependencies {
     implementation 'me.mattstudios.utils:matt-framework:1.4'
 
     compileOnly 'org.spigotmc:spigot-api:1.16.2-R0.1-SNAPSHOT'
+    compileOnly 'com.vk2gpz.tokenenchant:TokenEnchantAPI:18.5.4'
 }
 
 tasks.build.dependsOn("shadowJar")

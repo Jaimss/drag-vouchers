@@ -124,7 +124,9 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         }
         enchantmentsToAdd.forEach { (ench, level) ->
             if (ench != null && level != null) {
-                clickedItemMeta.addEnchant(ench, level, true)
+                clickedItemMeta.removeEnchant(ench)
+                if (level != 0)
+                    clickedItemMeta.addEnchant(ench, level, true)
             }
         }
 
