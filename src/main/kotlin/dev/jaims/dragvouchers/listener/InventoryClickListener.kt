@@ -7,8 +7,6 @@ import dev.jaims.mcutils.bukkit.log
 import dev.jaims.mcutils.bukkit.send
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -18,6 +16,8 @@ import org.bukkit.persistence.PersistentDataType
 import javax.print.attribute.standard.Severity
 
 class InventoryClickListener(private val plugin: DragVouchers) : Listener {
+
+    private val api = TokenEnchantAPI.getInstance()
 
     /**
      * Handle the main features of the plugin
@@ -71,7 +71,7 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         }
 
         // enchantment requirements list
-        val requiredEnchantments = requirementsSection.getStringList("enchantments").associate {
+        /*val requiredEnchantments = requirementsSection.getStringList("enchantments").associate {
             if (!it.contains(":")) {
                 null to null
             }
@@ -89,21 +89,29 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
             if (ench == null || level == null) continue
             if (enchantments[ench] == level) hasOneEnchantment = true
         }
-        if (!hasOneEnchantment) return
+        if (!hasOneEnchantment) return*/
 
         // token enchantment requirement
-        val requiredTokenEnchants = requirementsSection.getStringList("token-enchantments").associate {
-            if (!it.contains(":")) {
-                null to null
+        val requiredTokenEnchantsMap = mutableMapOf<String, MutableList<Int>>()
+        // populate map
+        for (s in requirementsSection.getStringList("token-enchantments")) {
+            if (!s.contains(":")) {
+                plugin.log("$s doesn't have a level associated with it for voucher $voucherName!", Severity.WARNING)
+                continue
             }
-            it.split(":").firstOrNull()?.toLowerCase() to it.split(":").getOrNull(1)?.toIntOrNull()
+            val ench = s.split(":").firstOrNull() ?: continue
+            val level = s.split(":").getOrNull(1)?.toIntOrNull() ?: continue
+            requiredTokenEnchantsMap[ench]?.add(level) ?: requiredTokenEnchantsMap.put(ench, mutableListOf(level))
         }
-        var hasOneTokenEnchant = requiredTokenEnchants.isEmpty()
-        val currentTokenEnchantments = TokenEnchantAPI.getInstance().getEnchantments(clickedItem)
-        for ((ench, level) in requiredTokenEnchants) {
-            if (ench == null || level == null) continue
-            val tokenFromName = TokenEnchantAPI.getInstance().getEnchantment(ench)
-            if (currentTokenEnchantments[tokenFromName] == level) hasOneTokenEnchant = true
+        var hasOneTokenEnchant = requiredTokenEnchantsMap.isEmpty()
+        val currentTokenEnchantments = api.getEnchantments(clickedItem)
+        for ((ench, level) in requiredTokenEnchantsMap) {
+            val tokenFromName = api.getEnchantment(ench)
+            if (tokenFromName != null) {
+                if (level.contains(currentTokenEnchantments[tokenFromName])) hasOneTokenEnchant = true
+            } else {
+                plugin.log("No enchant with name $ench could be found for voucher $voucherName!", Severity.WARNING)
+            }
         }
         if (!hasOneTokenEnchant) return
 
@@ -129,23 +137,25 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
         }
 
         // add enchantments to the item
-        val enchantmentsToAdd = dataConfigSection.getStringList("enchant").associate {
-            if (!it.contains(":")) {
-                null to null
-            }
-            Enchantment.getByKey(
+        /*val enchantmentsToAddMap = mutableMapOf<Enchantment, Int>()
+        for (s in dataConfigSection.getStringList("enchant")) {
+            val ench = Enchantment.getByKey(
                 NamespacedKey.minecraft(
-                    it.split(":").firstOrNull()?.toLowerCase() ?: ""
+                    s.split(":").firstOrNull()?.toLowerCase() ?: "a"
                 )
-            ) to it.split(":").getOrNull(1)?.toIntOrNull()
-        }
-        enchantmentsToAdd.forEach { (ench, level) ->
-            if (ench != null && level != null) {
-                clickedItemMeta.removeEnchant(ench)
-                if (level != 0)
-                    clickedItemMeta.addEnchant(ench, level, true)
+            )
+            val level = s.split(":").getOrNull(1)?.toIntOrNull()
+            if (ench == null || level == null) {
+                plugin.log("$s had an invalid level or enchantment name for voucher $voucherName")
+                continue
             }
+            enchantmentsToAddMap.putIfAbsent(ench, level)
         }
+        enchantmentsToAddMap.forEach { (ench, level) ->
+            clickedItemMeta.removeEnchant(ench)
+            if (level != 0)
+                clickedItemMeta.addEnchant(ench, level, true)
+        }*/
 
         // change item durability
         val durabilityModification = dataConfigSection.getString("durability") ?: "none"
@@ -179,15 +189,27 @@ class InventoryClickListener(private val plugin: DragVouchers) : Listener {
             if (!it.contains(":")) {
                 null to null
             }
-            it.split(":").firstOrNull()?.toLowerCase() to it.split(":").getOrNull(1)?.toIntOrNull()
+            it.split(":").firstOrNull() to it.split(":").getOrNull(1)?.toIntOrNull()
         }
-        tokenEnchantmetsToAdd.forEach { (ench, level) ->
-            if (ench != null && level != null) {
-                clickedItem = if (level != 0) {
-                    TokenEnchantAPI.getInstance().enchant(null, clickedItem, ench, level, false, 0.0, true)
+        for ((ench, level) in tokenEnchantmetsToAdd) {
+            if (ench == null || level == null) continue
+            val realEnchant = api.getEnchantment(ench)
+            if (realEnchant == null) {
+                plugin.log(
+                    "Enchantment: $ench was not found for voucher $voucherName by TokenEnchant! It will not work!",
+                    Severity.WARNING
+                )
+                continue
+            }
+            clickedItem = if (level != 0) {
+                api.enchant(null, clickedItem, ench, level, false, 0.0, false)
+            } else {
+                if (api.getEnchantments(clickedItem)[realEnchant] != 1) {
+                    val levelOneItem = api.enchant(null, clickedItem, ench, 1, false, 0.0, false)
+                    plugin.log("Level One Item: $levelOneItem")
+                    api.disenchant(null, levelOneItem, ench, false, true)
                 } else {
-                    val levelOneItem = TokenEnchantAPI.getInstance().enchant(null, clickedItem, ench, 1, false, 0.0, true)
-                    TokenEnchantAPI.getInstance().disenchant(null, levelOneItem, ench, false, true)
+                    api.disenchant(null, clickedItem, ench, false, true)
                 }
             }
         }
