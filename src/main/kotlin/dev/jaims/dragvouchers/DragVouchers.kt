@@ -16,22 +16,22 @@ class DragVouchers : JavaPlugin() {
      * Plugin startup logic
      */
     override fun onEnable() {
-        log("&aEnabling DragVouchers 1.0.2.")
+        log("&aEnabling DragVouchers 1.0.3.")
 
         registerManagers()
         registerCommands()
         registerListeners()
 
-        log("&aEnabled DragVouchers 1.0.2!")
+        log("&aEnabled DragVouchers 1.0.3!")
     }
 
     /**
      * plugin shutdown logic
      */
     override fun onDisable() {
-        log("&cDisabling DragVouchers 1.0.2.")
+        log("&cDisabling DragVouchers 1.0.3.")
 
-        log("&CDisabled DragVouchers 1.0.2!")
+        log("&CDisabled DragVouchers 1.0.3!")
     }
 
     /**

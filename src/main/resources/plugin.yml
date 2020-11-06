@@ -1,5 +1,5 @@
 author: Jaimss
-version: 1.0.2
+version: 1.0.3
 name: DragVouchers
 description: A vouchers plugin that uses the inventory click event.
 main: dev.jaims.dragvouchers.DragVouchers
