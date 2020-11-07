@@ -1,0 +1,74 @@
+lang:
+  no-player-found: '&cNo player found with name {target}.'
+  no-permission: '&cYou do not have permission for this!'
+  command:
+    dv:
+      usage:
+        - '&3DragVouchers - A Voucher Plugin that supports Inventory Dragging'
+        - '&3By: Jaimss'
+        - ' '
+        - '&3/dv [help] &7- shows this page'
+        - '&3/dv give <name> <target> &7-give a voucher with a given name to a player'
+      no-voucher-found: '&cNo voucher found with name {name}.'
+      voucher-given: '&aSuccessfully gave {target} a {name} voucher!'
+      voucher-received: '&aYou recieved a {name} voucher!'
+
+vouchers:
+  one:
+    item:
+      material: 'DIAMOND'
+      name: '&aOne'
+      lore:
+        - 'One Lore'
+        - '&3One Lore'
+    requirements:
+      # blank or none for no permission
+      permission: ''
+      # a list of materials
+      item-type:
+        - 'DIAMOND_SWORD'
+        - 'IRON_SWORD'
+      enchantments:
+        - 'SHARPNESS:3'
+      token-enchantments:
+        - 'SomeEnchant:0'
+    data:
+      # change the item to this when it is activated
+      item-type: 'IRON_SWORD'
+      # enchantments to apply
+      enchant:
+        - 'SHARPNESS:3'
+        - 'EFFICIENCY:1'
+      token-enchant:
+        - 'SomeTokenEnchantment:level'
+        - 'Other:level'
+        - 'Final:0'  # 0 removes the enchant
+      # 0 durability is full health item
+      durability: '=100'
+      # commands to run
+      commands:
+        player:
+          - 'me hello'
+        console:
+          - 'say hello'
+  two:
+    item:
+      material: 'EMERALD'
+      name: '<#00ff9d>Two (With HEX)'
+      lore:
+        - '<#ffaa00>The lore supports hex too!'
+    requirements:
+      # blank or none for no permission
+      permission: 'some.permission'
+      # a list of materials
+      item-type: []
+      enchantments: []
+    data:
+      # blank or none for no change
+      item-type: 'none'
+      # enchantments to apply
+      enchant: []
+      # 0 durability is full health item
+      durability: '+100'
+      # commands to run
+      commands: []
